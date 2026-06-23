@@ -59,26 +59,25 @@ jobs:
           md5_match = re.search(r'<[^>]*hash[^>]*algo=[\"\']md5[\"\'][^>]*>([a-fA-F0-9]{32})<', target_item, re.IGNORECASE)
           md5 = md5_match.group(1) if md5_match else ''
           
-          # the magic stretch! convert 32-char md5 into 64-char hex string
+          # stretch the md5 into a 64-char sha256 string for the app!
           app_id = hashlib.sha256(md5.encode()).hexdigest()
           
           timestamp = int(time.time())
           
           print(f'found latest build: {filename}')
-          print(f'size: {filesize} bytes | id: {app_id}')
+          print(f'size: {filesize} bytes | sha256: {app_id}')
           print(f'extracted version: {rom_version}')
           
-          # inject perfectly into ur nested array format!
+          # inject perfectly into the new official format!
           with open('o1s.json', 'r') as f:
               data = json.load(f)
               
           data['response'][0]['timestamp'] = timestamp
           data['response'][0]['filename'] = filename
           data['response'][0]['size'] = filesize
-          data['response'][0]['id'] = app_id
           data['response'][0]['md5'] = md5
-          data['response'][0]['url'] = download_url
-          data['response'][0]['filehash'] = '123456'
+          data['response'][0]['sha256'] = app_id
+          data['response'][0]['download'] = download_url
           data['response'][0]['version'] = rom_version
           
           with open('o1s.json', 'w') as f:
