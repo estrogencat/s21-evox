@@ -76,6 +76,7 @@ jobs:
           data['response'][0]['filename'] = filename
           data['response'][0]['size'] = filesize
           data['response'][0]['id'] = app_id
+          data['response'][0]['md5'] = md5
           data['response'][0]['url'] = download_url
           data['response'][0]['filehash'] = '123456'
           data['response'][0]['version'] = rom_version
