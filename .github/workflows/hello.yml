@@ -69,7 +69,7 @@ jobs:
           print(f'extracted version: {rom_version}')
           
           # inject perfectly into ur nested array format!
-          with open('ota.json', 'r') as f:
+          with open('o1s.json', 'r') as f:
               data = json.load(f)
               
           data['response'][0]['datetime'] = timestamp
@@ -80,7 +80,7 @@ jobs:
           data['response'][0]['filehash'] = '123456'
           data['response'][0]['version'] = rom_version
           
-          with open('ota.json', 'w') as f:
+          with open('o1s.json', 'w') as f:
               json.dump(data, f, indent=2)
           "
 
@@ -88,6 +88,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add ota.json
+          git add o1s.json
           git commit -m "build: automated ota push for latest upload"
           git push
