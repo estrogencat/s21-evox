@@ -4,13 +4,16 @@
       "maintainer": "OffsetPikachu55",
       "oem": "Samsung",
       "device": "o1s",
-      "filename": "EvolutionX-16.0-20260622-o1s-11.8-Unofficial.zip",
+      "filename": "EvolutionX-16.0-20260623-o1s-11.8-Unofficial.zip",
       "url": "https://sourceforge.net/projects/hazel-evolutionx/files/a16/EvolutionX-16.0-20260622-o1s-11.8-Unofficial.zip/download",
       "datetime": 1782181898,
       "id": "7044a3c7d37a2dad0aee92d77fe875f48de0fcbf1bc214b985cf7d9923922a4f",
-      "size": 3181665971,
+      "size": 3181651496,
       "romtype": "unofficial",
-      "version": "11.8"
+      "version": "11.8",
+      "timestamp": 1782231944,
+      "md5": "d277b2304ecf73c98e9e265c1080b727",
+      "download": "https://sourceforge.net/projects/hazel-evolutionx/files/a16/EvolutionX-16.0-20260623-o1s-11.8-Unofficial.zip/download"
     }
   ]
 }
