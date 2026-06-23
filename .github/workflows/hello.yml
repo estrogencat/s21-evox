@@ -1,0 +1,71 @@
+name: Publish OTA Update
+
+on:
+  workflow_dispatch: 
+
+jobs:
+  update-ota-map:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+      - name: scrape sourceforge and update json
+        run: |
+          python3 -c "
+          import urllib.request, xml.etree.ElementTree as ET, json, time
+          
+          print('fetching sourceforge rss feed...')
+          url = 'https://sourceforge.net/projects/hazel-evolutionx/rss?path=/a16'
+          req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+          rss = urllib.request.urlopen(req).read()
+          
+          # parse the xml feed
+          root = ET.fromstring(rss)
+          item = root.find('.//item')
+          
+          if not item:
+              print('error: no files found in the feed!')
+              exit(1)
+              
+          filename = item.find('title').text.strip()
+          download_url = item.find('link').text.strip()
+          
+          # sourceforge stores size and md5 in the media namespace
+          ns = {'media': 'http://search.yahoo.com/mrss/'}
+          filesize = int(item.find('media:content', ns).attrib['filesize'])
+          
+          md5 = ''
+          for h in item.findall('media:hash', ns):
+              if h.attrib.get('algo') == 'md5':
+                  md5 = h.text.strip()
+                  
+          timestamp = int(time.time())
+          
+          print(f'found latest build: {filename}')
+          print(f'size: {filesize} bytes | md5: {md5}')
+          
+          # inject into ur map
+          with open('o1s.json', 'r') as f:
+              data = json.load(f)
+              
+          data['response'][0]['timestamp'] = timestamp
+          data['response'][0]['filename'] = filename
+          data['response'][0]['size'] = filesize
+          data['response'][0]['md5'] = md5
+          data['response'][0]['download'] = download_url
+          
+          with open('o1s.json', 'w') as f:
+              json.dump(data, f, indent=2)
+          "
+
+      - name: commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add o1s.json
+          git commit -m "build: automated ota push for latest upload"
+          git push
