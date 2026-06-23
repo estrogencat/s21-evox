@@ -64,15 +64,14 @@ jobs:
           with open('o1s.json', 'r') as f:
               data = json.load(f)
               
-          data['response'][0]['timestamp'] = timestamp
+          data['response'][0]['datetime'] = timestamp
           data['response'][0]['filename'] = filename
           data['response'][0]['size'] = filesize
-          data['response'][0]['md5'] = md5
-          data['response'][0]['download'] = download_url
+          data['response'][0]['id'] = md5
+          data['response'][0]['url'] = download_url
           
           with open('o1s.json', 'w') as f:
               json.dump(data, f, indent=2)
-          "
 
       - name: commit and push
         run: |
