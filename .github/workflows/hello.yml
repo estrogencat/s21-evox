@@ -68,19 +68,19 @@ jobs:
           print(f'size: {filesize} bytes | id: {app_id}')
           print(f'extracted version: {rom_version}')
           
-          # inject perfectly into ur flat map format
-          with open('o1s.json', 'r') as f:
+          # inject perfectly into ur nested array format!
+          with open('ota.json', 'r') as f:
               data = json.load(f)
               
-          data['datetime'] = timestamp
-          data['filename'] = filename
-          data['size'] = filesize
-          data['id'] = app_id
-          data['url'] = download_url
-          data['filehash'] = '123456'
-          data['version'] = rom_version
+          data['response'][0]['datetime'] = timestamp
+          data['response'][0]['filename'] = filename
+          data['response'][0]['size'] = filesize
+          data['response'][0]['id'] = app_id
+          data['response'][0]['url'] = download_url
+          data['response'][0]['filehash'] = '123456'
+          data['response'][0]['version'] = rom_version
           
-          with open('o1s.json', 'w') as f:
+          with open('ota.json', 'w') as f:
               json.dump(data, f, indent=2)
           "
 
@@ -88,6 +88,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add o1s.json
+          git add ota.json
           git commit -m "build: automated ota push for latest upload"
           git push
