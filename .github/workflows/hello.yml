@@ -16,7 +16,7 @@ jobs:
       - name: scrape sourceforge and update json
         run: |
           python3 -c "
-          import urllib.request, json, time, sys, re
+          import urllib.request, json, time, sys, re, hashlib
           
           print('fetching sourceforge rss feed...')
           url = 'https://sourceforge.net/projects/hazel-evolutionx/rss?path=/a16'
@@ -55,28 +55,32 @@ jobs:
           md5_match = re.search(r'<[^>]*hash[^>]*algo=[\"\']md5[\"\'][^>]*>([a-fA-F0-9]{32})<', target_item, re.IGNORECASE)
           md5 = md5_match.group(1) if md5_match else ''
           
+          # the magic stretch! convert 32-char md5 into 64-char hex string
+          app_id = hashlib.sha256(md5.encode()).hexdigest()
+          
           timestamp = int(time.time())
           
           print(f'found latest build: {filename}')
-          print(f'size: {filesize} bytes | md5: {md5}')
+          print(f'size: {filesize} bytes | id: {app_id}')
           
-          # inject perfectly into ur map
-          with open('o1s.json', 'r') as f:
+          # inject perfectly into ur map using the correct filename!
+          with open('ota.json', 'r') as f:
               data = json.load(f)
               
           data['response'][0]['datetime'] = timestamp
           data['response'][0]['filename'] = filename
           data['response'][0]['size'] = filesize
-          data['response'][0]['id'] = md5
+          data['response'][0]['id'] = app_id
           data['response'][0]['url'] = download_url
           
-          with open('o1s.json', 'w') as f:
+          with open('ota.json', 'w') as f:
               json.dump(data, f, indent=2)
+          "
 
       - name: commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add o1s.json
+          git add ota.json
           git commit -m "build: automated ota push for latest upload"
           git push
