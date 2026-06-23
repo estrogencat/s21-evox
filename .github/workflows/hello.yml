@@ -16,30 +16,40 @@ jobs:
       - name: scrape sourceforge and update json
         run: |
           python3 -c "
-          import urllib.request, xml.etree.ElementTree as ET, json, time
+          import urllib.request, xml.etree.ElementTree as ET, json, time, sys
           
           print('fetching sourceforge rss feed...')
           url = 'https://sourceforge.net/projects/hazel-evolutionx/rss?path=/a16'
           req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
           rss = urllib.request.urlopen(req).read()
           
-          # parse the xml feed
           root = ET.fromstring(rss)
-          item = root.find('.//item')
           
-          if not item:
-              print('error: no files found in the feed!')
-              exit(1)
+          # look specifically for the newest file that is actually a zip!
+          target_item = None
+          for item in root.findall('.//item'):
+              title = item.find('title')
+              if title is not None and title.text.strip().endswith('.zip'):
+                  target_item = item
+                  break
+                  
+          if target_item is None:
+              print('error: no .zip files found in the feed!')
+              sys.exit(1)
               
-          filename = item.find('title').text.strip()
-          download_url = item.find('link').text.strip()
+          filename = target_item.find('title').text.strip()
+          download_url = target_item.find('link').text.strip()
           
-          # sourceforge stores size and md5 in the media namespace
-          ns = {'media': 'http://search.yahoo.com/mrss/'}
-          filesize = int(item.find('media:content', ns).attrib['filesize'])
+          # grab the media tags using the literal namespace uri to be 100% safe
+          content_tag = target_item.find('{http://search.yahoo.com/mrss/}content')
+          if content_tag is None:
+              print('error: could not find file size metadata!')
+              sys.exit(1)
+              
+          filesize = int(content_tag.attrib.get('filesize', 0))
           
           md5 = ''
-          for h in item.findall('media:hash', ns):
+          for h in target_item.findall('{http://search.yahoo.com/mrss/}hash'):
               if h.attrib.get('algo') == 'md5':
                   md5 = h.text.strip()
                   
