@@ -16,43 +16,46 @@ jobs:
       - name: scrape sourceforge and update json
         run: |
           python3 -c "
-          import urllib.request, xml.etree.ElementTree as ET, json, time, sys
+          import urllib.request, json, time, sys, re
           
           print('fetching sourceforge rss feed...')
           url = 'https://sourceforge.net/projects/hazel-evolutionx/rss?path=/a16'
           req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-          rss = urllib.request.urlopen(req).read()
+          rss_text = urllib.request.urlopen(req).read().decode('utf-8')
           
-          root = ET.fromstring(rss)
+          # extract all items using regex to bypass xml namespace headaches
+          items = re.findall(r'<item>(.*?)</item>', rss_text, re.IGNORECASE | re.DOTALL)
           
-          # look specifically for the newest file that is actually a zip!
           target_item = None
-          for item in root.findall('.//item'):
-              title = item.find('title')
-              if title is not None and title.text.strip().endswith('.zip'):
+          for item in items:
+              if '.zip' in item:
                   target_item = item
                   break
                   
-          if target_item is None:
+          if not target_item:
               print('error: no .zip files found in the feed!')
               sys.exit(1)
               
-          filename = target_item.find('title').text.strip()
-          download_url = target_item.find('link').text.strip()
+          # scrape the exact filename (ignores the /a16/ folder path)
+          filename_match = re.search(r'<title>[^<]*?([^/<\s]+\.zip)</title>', target_item, re.IGNORECASE)
+          filename = filename_match.group(1) if filename_match else 'lineage_o1s-ota.zip'
           
-          # grab the media tags using the literal namespace uri to be 100% safe
-          content_tag = target_item.find('{http://search.yahoo.com/mrss/}content')
-          if content_tag is None:
-              print('error: could not find file size metadata!')
+          # scrape the download link
+          url_match = re.search(r'<link>(.*?)</link>', target_item, re.IGNORECASE)
+          download_url = url_match.group(1) if url_match else ''
+          
+          # aggressively rip the filesize out of either the media or enclosure tag
+          size_match = re.search(r'(?:filesize|length)=[\"\'](\d+)[\"\']', target_item, re.IGNORECASE)
+          if not size_match:
+              print('error: could not find file size metadata! dumping raw xml block:')
+              print(target_item)
               sys.exit(1)
-              
-          filesize = int(content_tag.attrib.get('filesize', 0))
+          filesize = int(size_match.group(1))
           
-          md5 = ''
-          for h in target_item.findall('{http://search.yahoo.com/mrss/}hash'):
-              if h.attrib.get('algo') == 'md5':
-                  md5 = h.text.strip()
-                  
+          # violently rip the md5 hash out of the media tag
+          md5_match = re.search(r'<[^>]*hash[^>]*algo=[\"\']md5[\"\'][^>]*>([a-fA-F0-9]{32})<', target_item, re.IGNORECASE)
+          md5 = md5_match.group(1) if md5_match else ''
+          
           timestamp = int(time.time())
           
           print(f'found latest build: {filename}')
