@@ -48,6 +48,10 @@ jobs:
               sys.exit(1)
           filename = name_match.group(1)
           
+          # aggressively hunt for the version number (like 11.8) inside the filename!
+          version_match = re.search(r'-(\d+\.\d+)[^\.]*\.zip$', filename, re.IGNORECASE)
+          rom_version = version_match.group(1) if version_match else '11.8'
+          
           # grab the size and hash
           size_match = re.search(r'(?:filesize|length)=[\"\'](\d+)[\"\']', target_item, re.IGNORECASE)
           filesize = int(size_match.group(1)) if size_match else 0
@@ -62,18 +66,21 @@ jobs:
           
           print(f'found latest build: {filename}')
           print(f'size: {filesize} bytes | id: {app_id}')
+          print(f'extracted version: {rom_version}')
           
-          # inject perfectly into ur map using the correct filename!
-          with open('o1s.json', 'r') as f:
+          # inject perfectly into ur flat map format
+          with open('ota.json', 'r') as f:
               data = json.load(f)
               
-          data['response'][0]['datetime'] = timestamp
-          data['response'][0]['filename'] = filename
-          data['response'][0]['size'] = filesize
-          data['response'][0]['id'] = app_id
-          data['response'][0]['url'] = download_url
+          data['datetime'] = timestamp
+          data['filename'] = filename
+          data['size'] = filesize
+          data['id'] = app_id
+          data['url'] = download_url
+          data['filehash'] = '123456'
+          data['version'] = rom_version
           
-          with open('o1s.json', 'w') as f:
+          with open('ota.json', 'w') as f:
               json.dump(data, f, indent=2)
           "
 
@@ -81,6 +88,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add o1s.json
+          git add ota.json
           git commit -m "build: automated ota push for latest upload"
           git push
