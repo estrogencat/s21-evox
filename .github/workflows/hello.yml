@@ -64,7 +64,7 @@ jobs:
           print(f'size: {filesize} bytes | id: {app_id}')
           
           # inject perfectly into ur map using the correct filename!
-          with open('ota.json', 'r') as f:
+          with open('o1s.json', 'r') as f:
               data = json.load(f)
               
           data['response'][0]['datetime'] = timestamp
@@ -73,7 +73,7 @@ jobs:
           data['response'][0]['id'] = app_id
           data['response'][0]['url'] = download_url
           
-          with open('ota.json', 'w') as f:
+          with open('o1s.json', 'w') as f:
               json.dump(data, f, indent=2)
           "
 
@@ -81,6 +81,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add ota.json
+          git add o1s.json
           git commit -m "build: automated ota push for latest upload"
           git push
