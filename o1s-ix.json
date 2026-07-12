@@ -1,0 +1,22 @@
+{
+  "response": [
+    {
+      "maintainer": "OffsetPikachu55",
+      "maintainer_url": "https://xdaforums.com/m/offsetpikachu55.11142215/",
+      "oem": "Samsung",
+      "device": "Galaxy S21",
+      "filename": "placeholder",
+      "download": "https://sourceforge.net/projects/hazel-infinityx/files/a16/placeholder/download",
+      "timestamp": 67,
+      "md5": "placeholder",
+      "sha256": "placeholder",
+      "size": 67,
+      "version": "1.1",
+      "buildtype": "userdebug",
+      "forum": "https://xdaforums.com/t/rom-unofficial-sm-g991b-evolution-x-11-for-samsung-galaxy-s21-5g-o1s-only.4792669",
+      "github": "https://github.com/estrogencat",
+      "firmware": "",
+      "paypal": ""
+    }
+  ]
+}
